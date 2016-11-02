@@ -1,56 +1,79 @@
 import cv2
 import numpy as np 
+import math
 
-org_img = cv2.imread('input-img.png',cv2.IMREAD_COLOR)
-#org = cv2.imread('thresh.png',cv2.CV_LOAD_IMAGE_COLOR)
+class LineTracer:
+    thresh = 50
+    maxValue =255
+    horizontalRes = 32
+    verticalRes = 24
 
-#Convert to Grayscale
-img = cv2.cvtColor(org_img, cv2.COLOR_BGR2GRAY)
+    def __init__(self,filename, turn_precision):
+        self.filename = filename
+        self.turn_res = turn_precision
 
-#Do Thresholding
-thresh = 50
-maxValue = 255
-th,img = cv2.threshold(img, thresh, maxValue, cv2.THRESH_BINARY_INV)
+    def getTurnDir():
+        line_xval = self.__findLine()
+        if(line_xval >= 0.0): #Line detected, proceed calculate turn signal
+            divisor = float(self.horizontalRes)/ self.turn_res;
+            return int(math.floor(
+                (line_xval / divisor) + 0.5))
+        else: #No line detected so return landing signal
+            return self.turn_res+1;
 
-#Blur to reduce noise
-img = cv2.medianBlur(img,17)
+    
+    def __findLine():
+        org_img = cv2.imread(self.filename,cv2.IMREAD_COLOR)
+        
+        #Convert to Grayscale
+        img = cv2.cvtColor(org_img, cv2.COLOR_BGR2GRAY)
 
-#Make image smaller
-img = cv2.resize(img,(0,0), fx=0.1, fy=0.1)
-org_img = cv2.resize(org_img,(0,0), fx=0.1, fy=0.1)
+        #Do Thresholding
+        h,img = cv2.threshold(img, self.thresh, self.maxValue, cv2.THRESH_BINARY_INV)
 
-#Create skeleton
-size = np.size(img)
-skel = np.zeros(img.shape,np.uint8)
-element = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
-done = False
-while( not done):
-    eroded = cv2.erode(img,element)
-    temp = cv2.dilate(eroded,element)
-    temp = cv2.subtract(img,temp)
-    skel = cv2.bitwise_or(skel,temp)
-    img = eroded.copy()
-    zeros = size - cv2.countNonZero(img)
-    if zeros==size:
-        done = True
+        #Blur to reduce noise
+        img = cv2.medianBlur(img,17)
 
-#Do Line Detection
-minLineLength = 100
-maxLineGap = 0
-lines = cv2.HoughLinesP(skel,1,np.pi/180,10,minLineLength,maxLineGap)
+        #Make image smaller
+        img = cv2.resize(img, (self.horizontalRes, self.verticalRes))
+        #org_img = cv2.resize(org_img, (self.horizontalRes, self.verticalRes))
 
-#debug print lines
-print lines[0]
-for x1,y1,x2,y2 in lines[0]:
-        cv2.line(org_img,(x1,y1),(x2,y2),(0,255,0),2)
+        #Create skeleton
+        size = np.size(img)
+        skel = np.zeros(img.shape,np.uint8)
+        element = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+        done = False
+        while( not done):
+            eroded = cv2.erode(img,element)
+            temp = cv2.dilate(eroded,element)
+            temp = cv2.subtract(img,temp)
+            skel = cv2.bitwise_or(skel,temp)
+            img = eroded.copy()
+            zeros = size - cv2.countNonZero(img)
+            if zeros==size:
+                done = True
+
+        #Do Line Detection
+        minLineLength = 100
+        maxLineGap = 0
+        lines = cv2.HoughLinesP(skel,1,np.pi/180,10,minLineLength,maxLineGap)
 
 
-#write output visualization
-cv2.imwrite("output-img.png",org_img);
+        #get minimum and maximum x-coordinate from lines
+        x_min = self.horizontalRes+1.0
+        x_max = -1.0;
+        for x1,y1,x2,y2 in lines[0]:
+            x_min = min(x_min, x1, x2)
+            x_max = max(x_max, x1, x2)
+            #cv2.line(org_img,(x1,y1),(x2,y2),(0,255,0),2)
 
-#Show results
-cv2.imshow("skel",skel)
-cv2.imshow("img",org_img);
+        #write output visualization
+        #cv2.imwrite("output-img.png",org_img);
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+        #find the middle point x of the line and return
+        #return -1.0 if no lines found
+        if(x_max == -1.0 | x_min == (self.horizontalRes+1.0) ):
+            return -1.0 #no line found
+        else:
+            return (x_min + x_max) / 2.0
+        
