@@ -14,6 +14,7 @@ from pymavlink import mavutil # Needed for command message definitions
 import time
 import math
 
+from line_detector import LineDetector
 
 #Set up option parsing to get connection string
 import argparse  
@@ -171,7 +172,7 @@ The code also sets the yaw (MAV_CMD_CONDITION_YAW) using the `set_yaw()` method 
 so that the front of the vehicle points in the direction of travel
 """
 
-DURATION = 3
+DURATION = 1
 
 #Set up velocity vector to map to each direction.
 # vx > 0 => fly North
@@ -182,8 +183,8 @@ SOUTH = -0.5
 # Note for vy:
 # vy > 0 => fly East
 # vy < 0 => fly West
-EAST = 0.5
-WEST = -0.5
+EAST = 1.5
+WEST = -1.5
 
 # Note for vz: 
 # vz < 0 => ascend
@@ -195,22 +196,31 @@ WEST = -0.5
 UP = 0
 DOWN = 0
 
+PRECISION = 3
+YAW_CONTROL = True
+ABS_MAX_TURNING_ANGLE = 75
+
+ld = LineDetector(PRECISION)
 
 arm_and_takeoff(1.5)
 
 print("!!!!!!!!!!! MOVING START !!!!!!!!!")
 
-print("FORWARD 3 SECONDS")
-send_ned_velocity(NORTH,0,0,DURATION)
+while True:
+    # getTurnDir returns
+    dir = ld.getTurnDir()
+    print("getTurnDir returns %d" % dir)
+    
+    # If there is no line, land the vehicle
+    if dir == (PRECISION + 1):
+        break
 
-print("STOP 1 SECOND")
-send_ned_velocity(0,0,0,1)
-
-print("YAW 90")
-condition_yaw(90)
-
-print("FORWARD 3 SECONDS")
-send_ned_velocity(NORTH,0,0,DURATION)
+    # If YAW_CONTROL is true, it is possible to trace curves.
+    if YAW_CONTROL == True:
+        condition_yaw(ABS_MAX_TURNING_ANGLE/PRECISION*dir)
+        send_ned_velocity(NORTH,0,0,DURATION)
+    else:
+        send_ned_velocity(NORTH,EAST/PRECISION*dir,0,DURATION)
 
 print("!!!!!!!!!!! MOVING END !!!!!!!!!")
 
