@@ -1,6 +1,8 @@
 # line-follower
 How to use line_detector.py:
-add "from line_detector import LineDetector" at start of file!
+First add "from line_detector import LineDetector" to your code
+then initialize the object as such : LineDetector(turn_precision),
+e.g foo = LineDetector(6)
 # line-follower
 
 
