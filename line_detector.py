@@ -43,7 +43,9 @@ class LineDetector:
     def __grabImage(self):
         self.__camera.capture(self.__rawCapture, format="bgr")
         self.currentImage = self.__rawCapture.array
-
+        #Clear rawCapture variable
+        self.__rawCapture = PiRGBArray(self.__camera, size=(self.__cam_xres,
+            self.__cam_yres))
     
     def __findLine(self):
         self.__grabImage();
