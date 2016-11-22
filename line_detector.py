@@ -25,6 +25,8 @@ class LineDetector:
 
         #Initialize raspberry picamera!
         self.__camera = PiCamera()
+        self.__camera.vflip = True
+        self.__camera.hflip = True
         self.__camera.resolution = (self.__cam_xres, self.__cam_yres)
         self.__rawCapture = PiRGBArray(self.__camera, size=(self.__cam_xres,
             self.__cam_yres))
