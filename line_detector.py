@@ -94,11 +94,13 @@ class LineDetector:
         #get minimum and maximum x-coordinate from lines
         x_min = self.horizontalRes+1.0
         x_max = -1.0;
-	if(lines != None and len(lines[0]) > 0):
-		for x1,y1,x2,y2 in lines[0]:
-		    x_min = min(x_min, x1, x2)
-		    x_max = max(x_max, x1, x2)
-		    #cv2.line(org_img,(x1,y1),(x2,y2),(0,255,0),2)
+
+        m = self.__convertLinesToMatrix(lines)
+	#if(lines != None and len(lines[0]) > 0):
+	#	for x1,y1,x2,y2 in lines[0]:
+	#	    x_min = min(x_min, x1, x2)
+	#	    x_max = max(x_max, x1, x2)
+	#	    #cv2.line(org_img,(x1,y1),(x2,y2),(0,255,0),2)
 
         #write output visualization
         #cv2.imwrite("output-img.png",org_img);
@@ -109,4 +111,64 @@ class LineDetector:
             return -1.0 #no line found
         else:
             return (x_min + x_max) / 2.0
-        
+       
+       
+    def __convertLinesToMatrix(self, lines):
+        mat = [[0]*self.horizontalRes for _ in range(self.verticalRes)]
+        if(lines != None and len(lines[0]) > 0):
+		for x1,y1,x2,y2 in lines[0]:
+                        p = get_line(x1,y1,x2,y2);
+                        for (x,y) in p:
+                            mat[y][x] = 1
+
+        return mat
+
+	
+
+
+    def get_line(x1,y1,x2,y2):
+	"""Bresenham's Line Algorithm
+	Produces a list of tuples from start and end
+	"""
+	# Setup initial conditions
+	dx = x2 - x1
+	dy = y2 - y1
+     
+	# Determine how steep the line is
+	is_steep = abs(dy) > abs(dx)
+     
+	# Rotate line
+	if is_steep:
+	    x1, y1 = y1, x1
+	    x2, y2 = y2, x2
+     
+	# Swap start and end points if necessary and store swap state
+	swapped = False
+	if x1 > x2:
+	    x1, x2 = x2, x1
+	    y1, y2 = y2, y1
+	    swapped = True
+     
+	# Recalculate differentials
+	dx = x2 - x1
+	dy = y2 - y1
+     
+	# Calculate error
+	error = int(dx / 2.0)
+	ystep = 1 if y1 < y2 else -1
+     
+	# Iterate over bounding box generating points between start and end
+	y = y1
+	points = []
+	for x in range(x1, x2 + 1):
+	    coord = (y, x) if is_steep else (x, y)
+	    points.append(coord)
+	    error -= abs(dy)
+	    if error < 0:
+		y += ystep
+		error += dx
+     
+	# Reverse the list if the coordinates were swapped
+	if swapped:
+	    points.reverse()
+	return points 
