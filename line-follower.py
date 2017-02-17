@@ -111,8 +111,6 @@ def set_attitude(roll_rate = 0.0, pitch_rate = 0.0, yaw_rate = 0.0, thrust = 0.5
 Find the line to follow and change the attributes of the vehicle appropriately by setting attitude targets.
 """
 
-DURATION = 1
-
 #Set up velocity vector to map to each direction.
 # vx > 0 => fly North
 # vx < 0 => fly South
@@ -147,7 +145,7 @@ while True:
     if dir == PRECISION:
         break
 
-    set_attitude(yaw_rate = ABS_MAX_TURNING_ANGLE/PRECISION*dir)
+    set_attitude(yaw_rate = ABS_MAX_TURNING_ANGLE/PRECISION*dir, duration = 1)
 
 print("!!!!!!!!!!! MOVING END !!!!!!!!!")
 
