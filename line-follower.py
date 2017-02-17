@@ -78,6 +78,7 @@ def arm_and_takeoff_nogps(aTargetAltitude):
             thrust = SMOOTH_TAKEOFF_THRUST
         set_attitude(thrust = thrust)
         time.sleep(0.5)
+    set_attitude(thrust = 0.5)
 
 def set_attitude(roll_rate = 0.0, pitch_rate = 0.0, yaw_rate = 0.0, thrust = 0.5, duration = 0):
     """
