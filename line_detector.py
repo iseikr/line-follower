@@ -7,7 +7,7 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 
 class LineDetector:
-    thresh = 49
+    thresh = 60
     maxValue = 255
     horizontalRes = 32
     verticalRes = 24
@@ -25,6 +25,7 @@ class LineDetector:
 
         #Initialize raspberry picamera!
         self.__camera = PiCamera()
+        #self.__camera.rotation = 90
         self.__camera.vflip = True
         self.__camera.hflip = True
         self.__camera.resolution = (self.__cam_xres, self.__cam_yres)
@@ -60,7 +61,7 @@ class LineDetector:
         img = cv2.cvtColor(self.currentImage, cv2.COLOR_BGR2GRAY)
         
         #Blur to reduce noise
-        img = cv2.medianBlur(img,25)
+        img = cv2.medianBlur(img,29)
 
         #Do Thresholding
         h,img = cv2.threshold(img, self.thresh, self.maxValue, cv2.THRESH_BINARY_INV)
