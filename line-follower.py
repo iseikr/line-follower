@@ -81,11 +81,11 @@ def arm_and_takeoff_nogps(aTargetAltitude):
 
 def set_attitude(roll_rate = 0.0, pitch_rate = 0.0, yaw_rate = 0.0, thrust = 0.5, duration = 0):
     """
-        Note that from AC3.3 the message should be re-sent every second (after about 3 seconds
-        with no message the velocity will drop back to zero). In AC3.2.1 and earlier the specified
-        velocity persists until it is canceled. The code below should work on either version
-        (sending the message multiple times does not cause problems).
-        """
+    Note that from AC3.3 the message should be re-sent every second (after about 3 seconds
+    with no message the velocity will drop back to zero). In AC3.2.1 and earlier the specified
+    velocity persists until it is canceled. The code below should work on either version
+    (sending the message multiple times does not cause problems).
+    """
     # Thrust >  0.5: Ascend
     # Thrust == 0.5: Hold the altitude
     # Thrust <  0.5: Descend
@@ -99,10 +99,10 @@ def set_attitude(roll_rate = 0.0, pitch_rate = 0.0, yaw_rate = 0.0, thrust = 0.5
                                                              radians(pitch_rate),   #body pitch rate in radian
                                                              radians(yaw_rate),     #body yaw rate in radian
                                                              thrust)                #thrust
-                                                             vehicle.send_mavlink(msg)
+    vehicle.send_mavlink(msg)
                                                              
     if duration != 0:
-    # send command to vehicle on 1 Hz cycle
+        # send command to vehicle on 1 Hz cycle
         for x in range(0,duration):
             time.sleep(1)
             vehicle.send_mavlink(msg)
