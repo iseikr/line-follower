@@ -95,9 +95,9 @@ def set_attitude(roll_rate = 0.0, pitch_rate = 0.0, yaw_rate = 0.0, thrust = 0.5
                                                              0,                     #target component
                                                              0b00000000,            #type mask: bit 1 is LSB
                                                              [1,0,0,0],             #q
-                                                             radians(roll_rate),    #body roll rate in radian
-                                                             radians(pitch_rate),   #body pitch rate in radian
-                                                             radians(yaw_rate),     #body yaw rate in radian
+                                                             math.radians(roll_rate),    #body roll rate in radian
+                                                             math.radians(pitch_rate),   #body pitch rate in radian
+                                                             math.radians(yaw_rate),     #body yaw rate in radian
                                                              thrust)                #thrust
     vehicle.send_mavlink(msg)
                                                              
@@ -117,7 +117,7 @@ Find the line to follow and change the attributes of the vehicle appropriately b
 FORWARD_ANGLE_PER_SECOND = 10
 
 PRECISION = 6
-ABS_MAX_TURNING_ANGLE = 75
+TURNING_ANGLE_RANGE = 90
 
 ld = LineDetector(PRECISION)
 
@@ -145,21 +145,24 @@ while True:
     if dir == PRECISION:
         break
 
-    set_attitude(yaw_rate = ABS_MAX_TURNING_ANGLE/PRECISION*dir, duration = 1)
+    set_attitude(yaw_rate = TURNING_ANGLE_RANGE/PRECISION*dir, duration = 1)
 
 print("!!!!!!!!!!! MOVING END !!!!!!!!!")
 
 # Set the vehicle to hold the position
 set_attitude(pitch_rate = -1 * FORWARD_ANGLE_PER_SECOND, duration = 1)
 
+set_attitude(thrust = 0, duration = 3)
+
 
 """
 The example is completing. LAND at current location.
 """
 
+time.sleep(1)
 print("Setting LAND mode...")
 vehicle.mode = VehicleMode("LAND")
-
+time.sleep(1)
 
 #Close vehicle object before exiting script
 print "Close vehicle object"
