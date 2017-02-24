@@ -80,26 +80,32 @@ def arm_and_takeoff_nogps(aTargetAltitude):
         time.sleep(0.5)
     set_attitude(thrust = 0.5)
 
-def set_attitude(roll_rate = 0.0, pitch_rate = 0.0, yaw_rate = 0.0, thrust = 0.5, duration = 0):
+def set_attitude(roll_angle = 0.0, pitch_angle = 0.0, yaw_rate = 0.0, thrust = 0.5, duration = 0):
     """
     Note that from AC3.3 the message should be re-sent every second (after about 3 seconds
     with no message the velocity will drop back to zero). In AC3.2.1 and earlier the specified
     velocity persists until it is canceled. The code below should work on either version
     (sending the message multiple times does not cause problems).
     """
+    
+    """
+    The roll and pitch rate cannot be controllbed with rate in radian in AC3.4.4 or earlier,
+    so you must use quaternion to control the pitch and roll for those vehicles.
+    """
+    
     # Thrust >  0.5: Ascend
     # Thrust == 0.5: Hold the altitude
     # Thrust <  0.5: Descend
     msg = vehicle.message_factory.set_attitude_target_encode(
                                                              0,
-                                                             0,                     #target system
-                                                             0,                     #target component
-                                                             0b00000000,            #type mask: bit 1 is LSB
-                                                             [1,0,0,0],             #q
-                                                             math.radians(roll_rate),    #body roll rate in radian
-                                                             math.radians(pitch_rate),   #body pitch rate in radian
-                                                             math.radians(yaw_rate),     #body yaw rate in radian
-                                                             thrust)                #thrust
+                                                             0,                                         #target system
+                                                             0,                                         #target component
+                                                             0b00000000,                                #type mask: bit 1 is LSB
+                                                             to_quaternion(roll_angle, pitch_angle),    #q
+                                                             0,                                         #body roll rate in radian
+                                                             0,                                         #body pitch rate in radian
+                                                             math.radians(yaw_rate),                    #body yaw rate in radian
+                                                             thrust)                                    #thrust
     vehicle.send_mavlink(msg)
                                                              
     if duration != 0:
@@ -107,6 +113,21 @@ def set_attitude(roll_rate = 0.0, pitch_rate = 0.0, yaw_rate = 0.0, thrust = 0.5
         for x in range(0,duration):
             time.sleep(1)
             vehicle.send_mavlink(msg)
+
+def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
+    t0 = math.cos(math.radians(yaw * 0.5))
+    t1 = math.sin(math.radians(yaw * 0.5))
+    t2 = math.cos(math.radians(roll * 0.5))
+    t3 = math.sin(math.radians(roll * 0.5))
+    t4 = math.cos(math.radians(pitch * 0.5))
+    t5 = math.sin(math.radians(pitch * 0.5))
+        
+    w = t0 * t2 * t4 + t1 * t3 * t5
+    x = t0 * t3 * t4 - t1 * t2 * t5
+    y = t0 * t2 * t5 + t1 * t3 * t4
+    z = t1 * t2 * t4 - t0 * t3 * t5
+
+    return [w, x, y, z]
 
 """
 Find the line to follow and change the attributes of the vehicle appropriately by setting attitude targets.
@@ -135,7 +156,7 @@ while(dir == PRECISION):
     dir = ld.getTurnDir()
 
 # Set the vehicle to move forward
-set_attitude(pitch_rate = FORWARD_ANGLE_PER_SECOND, duration = 1)
+set_attitude(pitch_angle = FORWARD_ANGLE_PER_SECOND, duration = 1)
 
 while True:
     # getTurnDir returns
@@ -151,7 +172,7 @@ while True:
 print("!!!!!!!!!!! MOVING END !!!!!!!!!")
 
 # Set the vehicle to hold the position
-set_attitude(pitch_rate = -1 * FORWARD_ANGLE_PER_SECOND, duration = 1)
+set_attitude(pitch_angle = -1 * FORWARD_ANGLE_PER_SECOND, duration = 1)
 
 set_attitude(thrust = 0, duration = 3)
 
