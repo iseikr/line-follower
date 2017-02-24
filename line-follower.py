@@ -144,10 +144,13 @@ def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
 Find the line to follow and change the attributes of the vehicle appropriately by setting attitude targets.
 """
 
-FORWARD_ANGLE = 7
+# Pitch: Negative = Forward, Positive = Backward
+# Roll: Negative = Left, Positive = Right
+FORWARD_ANGLE = -3
+ROLL_ANGLE = 3
 
 PRECISION = 6
-TURNING_ANGLE_RANGE = 90
+TURNING_ANGLE_RANGE = 60
 
 ld = LineDetector(PRECISION)
 
