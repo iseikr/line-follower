@@ -133,17 +133,14 @@ def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
 Find the line to follow and change the attributes of the vehicle appropriately by setting attitude targets.
 """
 
-#Set up velocity vector to map to each direction.
-# vx > 0 => fly North
-# vx < 0 => fly South
-FORWARD_ANGLE_PER_SECOND = 10
+FORWARD_ANGLE = 7
 
 PRECISION = 6
 TURNING_ANGLE_RANGE = 90
 
 ld = LineDetector(PRECISION)
 
-arm_and_takeoff_nogps(2.5)
+arm_and_takeoff_nogps(1.5)
 
 print("!!!!!!!!!!! MOVING START !!!!!!!!!")
 
@@ -156,7 +153,7 @@ while(dir == PRECISION):
     dir = ld.getTurnDir()
 
 # Set the vehicle to move forward
-set_attitude(pitch_angle = FORWARD_ANGLE_PER_SECOND, duration = 1)
+set_attitude(pitch_angle = FORWARD_ANGLE, duration = 1)
 
 while True:
     # getTurnDir returns
@@ -167,13 +164,11 @@ while True:
     if dir == PRECISION:
         break
 
-    set_attitude(yaw_rate = TURNING_ANGLE_RANGE/PRECISION*dir, duration = 1)
+    set_attitude(pitch_angle = FORWARD_ANGLE, yaw_rate = TURNING_ANGLE_RANGE/PRECISION*dir, duration = 1)
 
 print("!!!!!!!!!!! MOVING END !!!!!!!!!")
 
 # Set the vehicle to hold the position
-set_attitude(pitch_angle = -1 * FORWARD_ANGLE_PER_SECOND, duration = 1)
-
 set_attitude(thrust = 0, duration = 3)
 
 
