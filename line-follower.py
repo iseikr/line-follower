@@ -46,7 +46,7 @@ def arm_and_takeoff_nogps(aTargetAltitude):
     
     ##### CONSTANTS #####
     DEFAULT_TAKEOFF_THRUST = 0.7
-    SMOOTH_TAKEOFF_THRUST = 0.6
+    SMOOTH_TAKEOFF_THRUST = 0.55
     
     print "Basic pre-arm checks"
     # Don't let the user try to arm until autopilot is ready
@@ -77,8 +77,9 @@ def arm_and_takeoff_nogps(aTargetAltitude):
         elif current_altitude >= aTargetAltitude*0.6:
             thrust = SMOOTH_TAKEOFF_THRUST
         set_attitude(thrust = thrust)
-        time.sleep(0.5)
+        time.sleep(0.1)
     set_attitude(thrust = 0.5)
+
 
 def set_attitude(roll_angle = 0.0, pitch_angle = 0.0, yaw_rate = 0.0, thrust = 0.5, duration = 0):
     """
@@ -109,19 +110,29 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0, yaw_rate = 0.0, thrust = 0
     vehicle.send_mavlink(msg)
                                                              
     if duration != 0:
-        # send command to vehicle on 1 Hz cycle
-        for x in range(0,duration):
+        # Divide the duration into the frational and integer parts
+        modf = math.modf(duration)
+        
+        # Sleep for the fractional part
+        time.sleep(modf[0])
+        
+        # Send command to vehicle on 1 Hz cycle
+        for x in range(0,int(modf[1])):
             time.sleep(1)
             vehicle.send_mavlink(msg)
+            
 
 def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
+	"""
+	Convert degrees to quaternions
+	"""
     t0 = math.cos(math.radians(yaw * 0.5))
     t1 = math.sin(math.radians(yaw * 0.5))
     t2 = math.cos(math.radians(roll * 0.5))
     t3 = math.sin(math.radians(roll * 0.5))
     t4 = math.cos(math.radians(pitch * 0.5))
     t5 = math.sin(math.radians(pitch * 0.5))
-        
+    
     w = t0 * t2 * t4 + t1 * t3 * t5
     x = t0 * t3 * t4 - t1 * t2 * t5
     y = t0 * t2 * t5 + t1 * t3 * t4
@@ -152,9 +163,6 @@ while(dir == PRECISION):
     set_attitude(yaw_rate = 5, duration = 1)
     dir = ld.getTurnDir()
 
-# Set the vehicle to move forward
-set_attitude(pitch_angle = FORWARD_ANGLE, duration = 1)
-
 while True:
     # getTurnDir returns
     dir = ld.getTurnDir()
@@ -164,12 +172,12 @@ while True:
     if dir == PRECISION:
         break
 
-    set_attitude(pitch_angle = FORWARD_ANGLE, yaw_rate = TURNING_ANGLE_RANGE/PRECISION*dir, duration = 1)
+    set_attitude(pitch_angle = FORWARD_ANGLE, roll_angle = dir, yaw_rate = TURNING_ANGLE_RANGE/PRECISION*dir, duration = 1)
 
 print("!!!!!!!!!!! MOVING END !!!!!!!!!")
 
 # Set the vehicle to hold the position
-set_attitude(thrust = 0, duration = 3)
+#set_attitude(thrust = 0, duration = 3)
 
 
 """
