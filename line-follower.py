@@ -123,9 +123,9 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0, yaw_rate = 0.0, thrust = 0
             
 
 def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
-	"""
-	Convert degrees to quaternions
-	"""
+    """
+    Convert degrees to quaternions
+    """
     t0 = math.cos(math.radians(yaw * 0.5))
     t1 = math.sin(math.radians(yaw * 0.5))
     t2 = math.cos(math.radians(roll * 0.5))
