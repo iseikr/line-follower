@@ -154,7 +154,7 @@ TURNING_ANGLE_RANGE = 60
 
 ld = LineDetector(PRECISION)
 
-#arm_and_takeoff_nogps(0.7)
+arm_and_takeoff_nogps(0.7)
 
 print("!!!!!!!!!!! MOVING START !!!!!!!!!")
 
