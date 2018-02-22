@@ -45,7 +45,7 @@ def arm_and_takeoff_nogps(aTargetAltitude):
     """
     
     ##### CONSTANTS #####
-    DEFAULT_TAKEOFF_THRUST = 0.7
+    DEFAULT_TAKEOFF_THRUST = 0.65
     SMOOTH_TAKEOFF_THRUST = 0.55
     
     print "Basic pre-arm checks"
@@ -154,7 +154,7 @@ TURNING_ANGLE_RANGE = 60
 
 ld = LineDetector(PRECISION)
 
-arm_and_takeoff_nogps(1.5)
+#arm_and_takeoff_nogps(0.7)
 
 print("!!!!!!!!!!! MOVING START !!!!!!!!!")
 
@@ -172,6 +172,7 @@ while True:
     print("getTurnDir returns %d" % dir)
     
     # If there is no line, land the vehicle
+    # TODO: Count some number of PRECISION for correction of the line detection to prevent unexpected landing
     if dir == PRECISION:
         break
 
